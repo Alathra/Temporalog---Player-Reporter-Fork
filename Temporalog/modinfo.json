@@ -1,0 +1,15 @@
+{
+    "type": "code",
+    "modid": "temporalog_pr",
+    "name": "Temporalog + PlayerReporter",
+    "Side": "server",
+    "authors": [
+        "Th3Dilli",
+        "Cantos"
+    ],
+    "description": "Logs server metrics to InfluxDb which are then visualized in Grafana. Also logs player interactions",
+    "version": "1.2.0",
+    "dependencies": {
+        "game": "1.19.0-rc.1"
+    }
+}
