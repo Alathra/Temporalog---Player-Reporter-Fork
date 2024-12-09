@@ -83,7 +83,6 @@ internal class Temporalog : ModSystem
         }
 
         _server = (ServerMain)_sapi.World;
-        //bre = sapi.ModLoader.GetModSystem<ModSystemBlockReinforcement>();
 
         _vsProcess = Process.GetCurrentProcess();
 
@@ -269,7 +268,8 @@ internal class Temporalog : ModSystem
         var causeEntity = damagesource.GetCauseEntity();
         var playerName = causeEntity is EntityPlayer pl ? $"({pl.Player.PlayerName})" : causeEntity?.GetName();
         var source = $"{causeEntity?.GetType().Name} {playerName} [{damagesource.Type}] : {damagesource.Source}";
-        WritePoint(PointData.Measurement("deaths").Tag("player", byplayer.PlayerName)
+        WritePoint(PointData.Measurement("deaths")
+            .Tag("player", byplayer.PlayerName)
             .Field("value", source));
     }
 
@@ -301,66 +301,39 @@ internal class Temporalog : ModSystem
     }
     private void onBreakBlock(IServerPlayer byPlayer, BlockSelection blockSel, ref float dropQuantityMultiplier, ref EnumHandling handling) //This function is called by our event listener when a block breaks
     {
-        //BlockData bdata = new BlockData(); //Initialize our BlockData class to hold our player and block info
+
         BlockPos pos = blockSel.Position; //get the pos of the block
         string position = pos.ToString(); //Convert the pos into a readable string
         string itemUsedName = "None";
         itemUsedName = byPlayer.InventoryManager.ActiveHotbarSlot?.GetStackName() ?? "Hand";
         string playerName = byPlayer.PlayerName; //Get the player's name
         string block = _sapi.World.GetBlock(blockSel.Block.BlockId).GetPlacedBlockName(_sapi.World, pos); //Get the block name
-        //bdata.reinforced = bre.IsReinforced(pos);
-        /*if (bdata.reinforced)
-        {
-            BlockReinforcement brdata = bre.GetReinforcment(pos);
-            if (brdata.LastPlayername != null)
-                bdata.reinforcePlayer = brdata.LastPlayername.ToString();
-            else bdata.reinforcePlayer = "null";
-            if (brdata.LastGroupname != null)
-                bdata.reinforceGroup = brdata.LastGroupname.ToString();
-            else bdata.reinforceGroup = "null";
-            _sapi.Logger.Audit("[{0}] Player: {1} broke {2} at pos {3}. [RE] owner_player: {4}, owner_group: {5}, str: {6}", EnumPlayerReport.ReinforcedBlockBreak, bdata.player, bdata.block, position, bdata.reinforcePlayer, bdata.reinforceGroup, brdata.Strength);
-            return;
-        }*/
-        // {0} Logger type, {1} Player, {2} Player Position, {3} Item Used, {4} Target Block, {5} Target Block Position
-        _sapi.Logger.Audit("[{0}] Player: {1} at {2} used {3} to brake {4} at pos {5}", EnumPlayerReport.BlockBreak, playerName, byPlayer.Entity.Pos.XYZInt, itemUsedName, block, position);
-    }
 
-
-    private void SortAuditLog(string message, params object[] args) {
-        PointData auditData = new PointData;
-        if (args.Length > 0 && args[0] is EnumPlayerReport)
-            
-        {
-            // Arg 1 should be player
-            // Arg 2 should be Player Position
-            // Arg 3 should be Item used
-            // Arg 4 should be Block/Entity,
-            // Arg 5 should be block/entity position
-            // Further args should be listed in [object], [position] format, followed by other relevant info.
-
-            
-            switch (args[0])
+            /*if (bdata.reinforced)
             {
-                auditData.
-                case EnumPlayerReport.BlockBreak:
+                BlockReinforcement brdata = bre.GetReinforcment(pos);
+                if (brdata.LastPlayername != null)
+                    bdata.reinforcePlayer = brdata.LastPlayername.ToString();
+                else bdata.reinforcePlayer = "null";
+                if (brdata.LastGroupname != null)
+                    bdata.reinforceGroup = brdata.LastGroupname.ToString();
+                else bdata.reinforceGroup = "null";
+                _sapi.Logger.Audit("[{0}] Player: {1} broke {2} at pos {3}. [RE] owner_player: {4}, owner_group: {5}, str: {6}", EnumPlayerReport.ReinforcedBlockBreak, bdata.player, bdata.block, position, bdata.reinforcePlayer, bdata.reinforceGroup, brdata.Strength);
+                return;
+            }*/
+            // {0} Logger type, {1} Player, {2} Player Position, {3} Item Used, {4} Target Block, {5} Target Block Position
+            _sapi.Logger.Audit("Player: {1} at {2} used {3} to brake {4} at pos {5}", EnumPlayerReport.BlockBreak, playerName, byPlayer.Entity.Pos.XYZInt, itemUsedName, block, position);
 
-                    
-                    break;
-                case EnumPlayerReport.BlockPlace:
-
-
-
-                    break;
-                case EnumPlayerReport.BlockUse:
-
-
-                    break;
-                case EnumPlayerReport.EntityUse:
-
-
-                    break;
-            }
-        }
+        // Use PointData.tag for small, discrete sets of values that do not or are not likely to change.
+        // Use PointData.field to contain collected data of any type
+        WritePoint(PointData.Measurement("blockBreak")
+            .Tag("player", byPlayer.PlayerName)
+            .Tag("playerUID", byPlayer.PlayerUID)
+            .Field("blockbreakreport", string.Format("Player: {1} at {2} used {3} to brake {4} at pos {5}", playerName, byPlayer.Entity.Pos.XYZInt, itemUsedName, block, position))
+            .Field("playerPosition", byPlayer.Entity.Pos.XYZInt)
+            .Field("itemUsedName", itemUsedName)
+            .Field("blockName", block)
+            .Field("blockPosition", position));
 
     }
 
